@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<p class="eyebrow">LOTTERY × APPROVAL</p><h1>コミュニティのための<br>ドージェ選挙</h1><p class="lead">くじと承認投票を重ねて、幅広く支持される代表者を探します。</p>
+<div class="columns"><section class="card"><h2>データセット</h2>{% for d in datasets %}<a class="listrow" href="/datasets/{{ d.id }}"><strong>{{ d.name }}</strong><span>{{ d.members|length }}人{% if d.min_posts is none %} · 条件未設定{% else %} · 最低{{ d.min_posts }}投稿{% endif %}</span></a>{% else %}<p class="muted">まだデータセットがありません。JSONLを取り込んで始めましょう。</p>{% endfor %}</section>
+<section class="card"><h2>JSONLを取り込む</h2><form action="/datasets" method="post" enctype="multipart/form-data">
+<label>名前<input name="name" required placeholder="イラストコミュニティ・50人"></label><label>JSONLファイル（UTF-8、5MiBまで）<input name="file" type="file" accept=".jsonl,.json,application/json" required></label><button>取り込む</button></form></section></div>
+{% endblock %}

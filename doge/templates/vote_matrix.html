@@ -1,0 +1,27 @@
+<details class="vote-matrix-panel">
+  <summary>誰が誰に賛成したか（行列）</summary>
+  <p class="muted">列：投票した委員 · 行：候補者。○ 賛成 / × 反対 / 拒 回答拒否 / — 自己投票なし / ? 記録なし。数値は判定値です。複数候補への賛成が可能で、個々の委員が当選者を直接選ぶ票ではありません。</p>
+  {% set line = stage.line if stage.line is defined else run.threshold %}
+  <p class="muted">この段階の賛成の線：{{ line if line is not none else '算出不可（全件回答拒否）' }}{% if stage.self_vote %} · ○自 は最終委員の自己票（判定値なし）{% endif %}</p>
+  <div class="vote-matrix-scroll" role="region" aria-label="{{ stage.label }}の賛否行列" tabindex="0">
+    <table class="vote-matrix">
+      <caption>{{ stage.label }}の賛否と得票</caption>
+      <thead><tr><th scope="col">候補者 ＼ 委員</th>{% for voter in stage.voters %}<th scope="col"><a href="{{ person_url(run.id,voter) }}">{{ voter }}</a></th>{% endfor %}<th scope="col">賛成数</th><th scope="col">結果</th></tr></thead>
+      <tbody>{% for candidate, count in stage.counts.items() %}<tr>
+        <th scope="row"><a href="{{ person_url(run.id,candidate) }}">{{ candidate }}</a></th>
+        {% for voter in stage.voters %}
+          {% set pair = pair_lookup.get((voter, candidate)) %}
+          {% if voter == candidate %}
+            <td class="{{ 'vote-yes' if stage.self_vote else 'vote-na' }}" title="{{ '自己票・API判定なし' if stage.self_vote else '自己投票なし' }}">{{ '○自' if stage.self_vote else '—' }}</td>
+          {% elif pair is none %}<td class="vote-na" title="保存された判定がありません">?</td>
+          {% elif pair.refusal %}<td class="vote-no" title="回答拒否・反対として集計">拒</td>
+          {% else %}
+            {% set yes = line is not none and pair.probability >= line %}
+            <td class="{{ 'vote-yes' if yes else 'vote-no' }}" title="{{ voter }} → {{ candidate }}：{{ '賛成' if yes else '反対' }} / {{ pair.probability }}">{{ '○' if yes else '×' }}<small>{{ '%.3f'|format(pair.probability) }}</small></td>
+          {% endif %}
+        {% endfor %}
+        <td><strong>{{ count }}</strong></td><td>{{ '選出' if candidate in stage.selected else '—' }}</td>
+      </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</details>
